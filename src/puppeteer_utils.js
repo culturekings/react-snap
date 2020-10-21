@@ -28,12 +28,16 @@ const skipThirdPartyRequests = async opt => {
   });
 };
 
-const redirectRequest = async ({page, publicUrl }) => {
+const redirectRequest = async ({ page, options }) => {
   await page.setRequestInterception(true)
   page.on("request", request => {
-    request.continue({
-      url: request.url().replace(publicUrl, "")
-    })
+    if (!request.isNavigationRequest()) {
+      request.continue({
+        url: `http://localhost:${options.port}/${request.url().split('/').slice(-1)}`
+      })
+    } else {
+      request.continue()
+    }
   })
 }
 
@@ -232,10 +236,10 @@ const crawl = async opt => {
         await page._client.send("ServiceWorker.disable");
         await page.setCacheEnabled(options.puppeteer.cache);
         if (options.viewport) await page.setViewport(options.viewport);
-        if (options.skipThirdPartyRequests)
+        if (options.skipThirdPartyRequests) {
           await skipThirdPartyRequests({ page, options, basePath });
-        if (process.env.PUBLIC_URL)
-          await redirectRequest({ page, publicUrl: process.env.PUBLIC_URL });
+        }
+        await redirectRequest({ page, options });
         enableLogging({
           page,
           options,
