@@ -33,7 +33,7 @@ const redirectRequest = async ({ page, options }) => {
   page.on("request", request => {
     if (!request.isNavigationRequest()) {
       request.continue({
-        url: `http://localhost:${options.port}/${request.url().split('/').slice(-1)}`
+        url: `http://localhost:${options.port}/${request.url().split('/').slice(-2).join('/')}`
       })
     } else {
       request.continue()
