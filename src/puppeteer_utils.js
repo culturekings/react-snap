@@ -28,6 +28,15 @@ const skipThirdPartyRequests = async opt => {
   });
 };
 
+const redirectRequest = async page => {
+  await page.setRequestInterception(true)
+  page.on("request", request => {
+    request.continue({
+      url: request.url().replace(process.env.CDN_URL, "")
+    })
+  })
+}
+
 /**
  * @param {{page: Page, options: {sourceMaps: boolean}, route: string, onError: ?function }} opt
  * @return {void}
@@ -225,6 +234,8 @@ const crawl = async opt => {
         if (options.viewport) await page.setViewport(options.viewport);
         if (options.skipThirdPartyRequests)
           await skipThirdPartyRequests({ page, options, basePath });
+        if (process.env.CDN_URL)
+          await redirectRequest(page);
         enableLogging({
           page,
           options,
