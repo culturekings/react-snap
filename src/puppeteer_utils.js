@@ -31,7 +31,7 @@ const skipThirdPartyRequests = async opt => {
 const redirectRequest = async ({ page, options }) => {
   await page.setRequestInterception(true)
   page.on("request", request => {
-    if (!request.isNavigationRequest()) {
+    if (["stylesheet", "script"].includes(request.resourceType())) {
       request.continue({
         url: `http://localhost:${options.port}/${request.url().split('/').slice(-2).join('/')}`
       })
